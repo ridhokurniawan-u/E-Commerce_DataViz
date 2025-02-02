@@ -102,6 +102,14 @@ def eda_checking():
 
 def top_selling_products():
     st.header("Top Selling Products")
+    st.markdown("""
+    In this section, we display the top-selling products based on order volume. 
+    The bar chart shows the products with the highest sales volume, categorized by product category.
+    You can see how much each product has sold and their total sales value.
+    ---
+    Using this Visualisation, we can answer on Question Number 1
+        - What is the most high-selling product?
+    """)
     date_range = st.date_input(
         "Select Date Range",
         value=(orders['order_purchase_timestamp'].min().date(), 
@@ -159,6 +167,14 @@ def top_selling_products():
 
 def order_status_distribution():
     st.header("Order Status Distribution")
+    st.markdown("""
+    This section visualizes the distribution of order statuses across all orders. 
+    The pie chart shows the proportion of each order status, such as 'Shipped', 'Delivered', 'Canceled', etc.
+    Understanding the order status distribution helps us see the overall order completion rate and potential issues.
+    ---
+    Using this Visualisation, we can answer on Question Number 2
+        - Rate of order cancelled and order delivered
+    """)
     time_period = st.selectbox(
         "Select Time Period",
         ["Last 30 days", "Last 90 days", "Last 180 days", "All time"]
@@ -212,7 +228,17 @@ def order_status_distribution():
 
 def top_cities_by_order():
     st.header("Top Cities by Order Count")
-    
+    st.markdown("""
+    Here, we visualize the cities with the highest number of orders. 
+    The bar chart highlights the cities that are driving the most orders, which can give insight into regional demand.
+    The top 10 cities are listed based on the order count, helping us understand where the majority of the sales are coming from.
+                
+    Also we included a Geographical Map to locate the highest number of orders (Limited to 1000, to avoid performance issues)
+    Please Wait until it fully loaded! :D
+    ---
+    Using this Visualisation, we can answer on Question Number 3
+        - Geolocation of the highest consumer
+    """)
     states = customers['customer_state'].unique()
     selected_states = st.multiselect(
         "Select States",
@@ -271,7 +297,10 @@ def payment_methods_distribution():
     st.markdown("""
     In this section, we examine the distribution of payment methods used by customers when placing their orders. 
     The bar chart presents the most popular payment methods, giving insights into how customers prefer to pay for their orders.
-    This can help in understanding payment trends and potential areas for optimizing payment options.
+    This can help in understanding payment trends and potential areas for optimizing payment options.    
+    ---
+    Using this Visualisation, we can answer on Question Number 4
+        - Most used Payment mode    
     """)
     
     payment_counts = order_payments['payment_type'].value_counts()
@@ -387,13 +416,13 @@ def main():
         st.write("Data cleaning was performed at load time. Thus, Data is Currently Clean :D")
     elif page == "EDA Checking":
         eda_checking()
-    elif page == "Top Selling Products":
+    elif page == "Question 1 -> Top Selling Products":
         top_selling_products()
-    elif page == "Order Status Distribution":
+    elif page == "Question 2 -> Order Status Distribution":
         order_status_distribution()
-    elif page == "Top Cities by Order Count":
+    elif page == "Question 3 -> Top Cities by Order Count":
         top_cities_by_order()
-    elif page == "Payment Methods Distribution":
+    elif page == "Question 4 -> Payment Methods Distribution":
         payment_methods_distribution()
     elif page == "RFM Analytics":
         rfm_analytics()
