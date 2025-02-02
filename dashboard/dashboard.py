@@ -389,9 +389,8 @@ def customer_clustering():
 def main():
     st.sidebar.title("Navigation")
     page = st.sidebar.selectbox("Select a page", 
-                                ["Home", "Data Assessment", "Data Cleaning", "EDA Checking", "Top Selling Products", 
-                                 "Order Status Distribution", "Top Cities by Order Count", "Payment Methods Distribution",
-                                 "RFM Analytics", "Customer Clustering"])
+                                ["Home", "Data Assessment", "Data Cleaning", "EDA Checking", "Question 1", 
+                                 "Question 2", "Question 3", "Question 4", "RFM Analytics", "Customer Clustering"])
     
     if page == "Home":
         st.title("Welcome to the E-Commerce Data Analysis App")
