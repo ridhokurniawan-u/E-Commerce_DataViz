@@ -400,10 +400,10 @@ def main():
         Navigate through the sidebar to explore different sections of the analysis.
                  
         In this scenario, we will try to answer these 4 business question
-        Question 1. What is the most high-selling product?
-        Question 2. Rate of order cancelled and order delivered
-        Question 3. Geolocation of the highest consumer
-        Question 4. Most used Payment mode
+        - Question 1. What is the most high-selling product?
+        - Question 2. Rate of order cancelled and order delivered
+        - Question 3. Geolocation of the highest consumer
+        - Question 4. Most used Payment mode
                     
         Made by RidhoK.U
         """)
