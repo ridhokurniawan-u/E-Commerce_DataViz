@@ -65,9 +65,23 @@ The following steps were followed to clean and explore the dataset:
    - Created various visualizations to present the data in an easy-to-understand format for non-technical stakeholders.
 
 ## **Installation**
-To set up the project, clone this repository and install the necessary libraries:
+## Setup Environment
 
-```bash
-git clone https://github.com/yourusername/ecommerce-customer-data-visualization.git
-cd ecommerce-customer-data-visualization
-pip install -r requirements.txt
+### Anaconda (Recommended)
+1. **Create a new environment with Python 3.9:**
+   ```bash
+   conda create --name ecommerce-dashboard python=3.9
+   conda activate ecommerce-dashboard
+   pip install -r requirements.txt
+   ```
+
+2. Shell/Terminal
+   ```bash
+   mkdir ecommerce-dashboard
+   cd ecommerce-dashboard
+   pip install -r requirements.txt
+
+## **Dashboard Execution**
+   ```bash
+   cd ./dashboard
+   streamlit run dashboard.py
