@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import folium
 from streamlit_folium import folium_static
+from datetime import datetime, timedelta
+
 
 def fix_arrow_compatibility(df):
     for col in df.select_dtypes(include=['object']).columns:
@@ -97,16 +99,34 @@ def eda_checking():
     st.subheader("Payment Types Distribution")
     st.write(order_payments['payment_type'].value_counts())
 
+
 def top_selling_products():
     st.header("Top Selling Products")
-    st.markdown("""
-    In this section, we display the top-selling products based on order volume. 
-    The bar chart shows the products with the highest sales volume, categorized by product category.
-    You can see how much each product has sold and their total sales value.
-                
-    At the moment, The most Top-Selling products are? Home Decor / Improvement
-    """)
-    product_sales = order_items.groupby('product_id').agg({
+    date_range = st.date_input(
+        "Select Date Range",
+        value=(orders['order_purchase_timestamp'].min().date(), 
+               orders['order_purchase_timestamp'].max().date()),
+        key="date_range_products"
+    )
+    
+    # Add category filter
+    unique_categories = product_category_name_translation['product_category_name_english'].unique()
+    selected_categories = st.multiselect(
+        "Select Product Categories",
+        unique_categories,
+        default=unique_categories[:5]
+    )
+
+    filtered_orders = orders[
+        (orders['order_purchase_timestamp'].dt.date >= date_range[0]) &
+        (orders['order_purchase_timestamp'].dt.date <= date_range[1])
+    ]
+    
+    product_sales = order_items.merge(
+        filtered_orders[['order_id']], 
+        on='order_id', 
+        how='inner'
+    ).groupby('product_id').agg({
         'order_item_id': 'count',
         'price': 'sum'
     }).reset_index()
@@ -114,82 +134,137 @@ def top_selling_products():
     product_sales = pd.merge(product_sales, products[['product_id', 'product_category_name']], on='product_id', how='left')
     product_sales = pd.merge(product_sales, product_category_name_translation, on='product_category_name', how='left')
     
-    top_10 = product_sales.nlargest(10, 'order_item_id')
+    product_sales = product_sales[
+        product_sales['product_category_name_english'].isin(selected_categories)
+    ]
+    
+    sort_by = st.selectbox(
+        "Sort by",
+        ["Sales Volume", "Total Revenue"]
+    )
+    
+    if sort_by == "Sales Volume":
+        top_10 = product_sales.nlargest(10, 'order_item_id')
+        x_col = 'order_item_id'
+        title = 'Top 10 Products by Sales Volume'
+    else:
+        top_10 = product_sales.nlargest(10, 'price')
+        x_col = 'price'
+        title = 'Top 10 Products by Revenue'
+
     fig, ax = plt.subplots(figsize=(12, 6))
-    sns.barplot(data=top_10, x='order_item_id', y='product_category_name_english', palette='viridis', ax=ax)
-    ax.set_title('Top 10 Products by Sales Volume')
-    ax.set_xlabel('Sales Volume')
-    ax.set_ylabel('Product Category')
+    sns.barplot(data=top_10, x=x_col, y='product_category_name_english', palette='viridis', ax=ax)
+    ax.set_title(title)
     st.pyplot(fig)
-    st.write(top_10[['product_category_name_english', 'order_item_id', 'price']])
 
 def order_status_distribution():
     st.header("Order Status Distribution")
-    st.markdown("""
-    This section visualizes the distribution of order statuses across all orders. 
-    The pie chart shows the proportion of each order status, such as 'Shipped', 'Delivered', 'Canceled', etc.
-    Understanding the order status distribution helps us see the overall order completion rate and potential issues.
-    """)
-    status_counts = orders['order_status'].value_counts()
-    fig, ax = plt.subplots(figsize=(10, 8))
-    wedges, texts, autotexts = ax.pie(
-        status_counts,
-        autopct='%1.1f%%',
-        startangle=140,
-        pctdistance=0.85
+    time_period = st.selectbox(
+        "Select Time Period",
+        ["Last 30 days", "Last 90 days", "Last 180 days", "All time"]
     )
-    centre_circle = plt.Circle((0, 0), 0.70, fc='white')
-    fig.gca().add_artist(centre_circle)
-    ax.set_title('Order Status Distribution')
-    ax.legend(wedges, status_counts.index, loc='center left', bbox_to_anchor=(1, 0.5), fontsize='large')
+    
+    end_date = orders['order_purchase_timestamp'].max()
+    if time_period != "All time":
+        days = int(time_period.split()[1])
+        start_date = end_date - timedelta(days=days)
+        filtered_orders = orders[orders['order_purchase_timestamp'] >= start_date]
+    else:
+        filtered_orders = orders
+
+    view_type = st.radio(
+        "Select View Type",
+        ["Pie Chart", "Bar Chart"]
+    )
+    
+    status_counts = filtered_orders['order_status'].value_counts()
+    
+    if view_type == "Pie Chart":
+        fig, ax = plt.subplots(figsize=(10, 8))
+        wedges, texts, autotexts = ax.pie(
+            status_counts,
+            autopct='%1.1f%%',
+            startangle=140,
+            pctdistance=0.85
+        )
+        centre_circle = plt.Circle((0, 0), 0.70, fc='white')
+        fig.gca().add_artist(centre_circle)
+    else:
+        fig, ax = plt.subplots(figsize=(10, 6))
+        sns.barplot(x=status_counts.index, y=status_counts.values, palette='viridis')
+        plt.xticks(rotation=45)
+    
     st.pyplot(fig)
-    st.write(status_counts)
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.metric(
+            "Total Orders",
+            len(filtered_orders),
+            delta=f"{((len(filtered_orders)/len(orders))*100):.1f}% of all orders"
+        )
+    with col2:
+        delivery_rate = (filtered_orders['order_status'] == 'delivered').mean() * 100
+        st.metric(
+            "Delivery Rate",
+            f"{delivery_rate:.1f}%"
+        )
 
 def top_cities_by_order():
     st.header("Top Cities by Order Count")
-    st.markdown("""
-    Here, we visualize the cities with the highest number of orders. 
-    The bar chart highlights the cities that are driving the most orders, which can give insight into regional demand.
-    The top 10 cities are listed based on the order count, helping us understand where the majority of the sales are coming from.
-                
-    Also we included a Geographical Map to locate the highest number of orders (Limited to 1000, to avoid performance issues)
-    Please Wait until it fully loaded! :D
-    """)
+    
+    states = customers['customer_state'].unique()
+    selected_states = st.multiselect(
+        "Select States",
+        states,
+        default=states[:5]
+    )
+
+    min_orders = st.slider(
+        "Minimum Number of Orders",
+        min_value=1,
+        max_value=1000,
+        value=50
+    )
+    
     customer_orders = pd.merge(orders, customers, on='customer_id', how='left')
-    top_locations = customer_orders.groupby(['customer_city', 'customer_state']).size().reset_index(name='order_count')
+    customer_orders = customer_orders[customer_orders['customer_state'].isin(selected_states)]
+    
+    top_locations = customer_orders.groupby(['customer_city', 'customer_state']).size()
+    top_locations = top_locations[top_locations >= min_orders].reset_index(name='order_count')
     top_locations = top_locations.nlargest(10, 'order_count')
+    
     fig, ax = plt.subplots(figsize=(12, 6))
     sns.barplot(data=top_locations, x='order_count', y='customer_city', palette='viridis', ax=ax)
-    ax.set_title('Top 10 Cities by Order Count')
+    ax.set_title('Top Cities by Order Count')
     st.pyplot(fig)
-    st.write(top_locations)
-
-    st.header("Geospatial Analysis")
+    
+    st.subheader("Interactive Map")
+    map_points = st.slider(
+        "Number of locations to show on map",
+        min_value=100,
+        max_value=5000,
+        value=1000,
+        step=100
+    )
+    
     customer_locations = pd.merge(
-        customers,
+        customers[customers['customer_state'].isin(selected_states)],
         geolocation[['geolocation_zip_code_prefix', 'geolocation_lat', 'geolocation_lng']],
         left_on='customer_zip_code_prefix',
         right_on='geolocation_zip_code_prefix',
         how='left'
     )
-    customer_locations.drop_duplicates(subset=['customer_zip_code_prefix'], inplace=True)
     
     m = folium.Map(location=[-14.235, -51.925], zoom_start=4)
-    for idx, row in customer_locations.head(1000).iterrows():
-        try:
-            lat = float(row['geolocation_lat'])
-            lng = float(row['geolocation_lng'])
-            folium.CircleMarker(
-                location=[lat, lng],
-                radius=3,
-                popup=f"City: {row['customer_city']}",
-                color='red',
-                fill=True
-            ).add_to(m)
-        except Exception as e:
-            continue
+    
+    heat_data = [[row['geolocation_lat'], row['geolocation_lng']] 
+                 for idx, row in customer_locations.head(map_points).iterrows()
+                 if not pd.isna(row['geolocation_lat'])]
+    
+    from folium.plugins import HeatMap
+    HeatMap(heat_data).add_to(m)
     folium_static(m)
-    st.write(customer_locations)
 
 def payment_methods_distribution():
     st.header("Payment Methods Distribution")
