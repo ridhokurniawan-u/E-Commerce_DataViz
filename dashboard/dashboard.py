@@ -103,7 +103,8 @@ def eda_checking():
 def top_selling_products():
     st.header("Top Selling Products")
     st.markdown("""
-    In this section, we display the top-selling products based on order volume. 
+    
+                In this section, we display the top-selling products based on order volume. 
     The bar chart shows the products with the highest sales volume, categorized by product category.
     You can see how much each product has sold and their total sales value.
     ---
@@ -168,7 +169,8 @@ def top_selling_products():
 def order_status_distribution():
     st.header("Order Status Distribution")
     st.markdown("""
-    This section visualizes the distribution of order statuses across all orders. 
+    
+                This section visualizes the distribution of order statuses across all orders. 
     The pie chart shows the proportion of each order status, such as 'Shipped', 'Delivered', 'Canceled', etc.
     Understanding the order status distribution helps us see the overall order completion rate and potential issues.
     ---
@@ -229,7 +231,8 @@ def order_status_distribution():
 def top_cities_by_order():
     st.header("Top Cities by Order Count")
     st.markdown("""
-    Here, we visualize the cities with the highest number of orders. 
+    
+                Here, we visualize the cities with the highest number of orders. 
     The bar chart highlights the cities that are driving the most orders, which can give insight into regional demand.
     The top 10 cities are listed based on the order count, helping us understand where the majority of the sales are coming from.
                 
@@ -295,6 +298,7 @@ def top_cities_by_order():
 def payment_methods_distribution():
     st.header("Payment Methods Distribution")
     st.markdown("""
+    
     In this section, we examine the distribution of payment methods used by customers when placing their orders. 
     The bar chart presents the most popular payment methods, giving insights into how customers prefer to pay for their orders.
     This can help in understanding payment trends and potential areas for optimizing payment options.    
