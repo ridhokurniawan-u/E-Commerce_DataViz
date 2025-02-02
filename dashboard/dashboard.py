@@ -415,13 +415,13 @@ def main():
         st.write("Data cleaning was performed at load time. Thus, Data is Currently Clean :D")
     elif page == "EDA Checking":
         eda_checking()
-    elif page == "Question 1 -> Top Selling Products":
+    elif page == "Question 1":
         top_selling_products()
-    elif page == "Question 2 -> Order Status Distribution":
+    elif page == "Question 2":
         order_status_distribution()
-    elif page == "Question 3 -> Top Cities by Order Count":
+    elif page == "Question 3":
         top_cities_by_order()
-    elif page == "Question 4 -> Payment Methods Distribution":
+    elif page == "Question 4":
         payment_methods_distribution()
     elif page == "RFM Analytics":
         rfm_analytics()
